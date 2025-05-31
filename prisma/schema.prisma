@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  EXPENSE
+  REVENUE
+}
+
+model Account {
+  id        String             @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  type      AccountType
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  entries   JournalEntryLine[]
+}
+
+model JournalEntry {
+  id        String             @id @default(auto()) @map("_id") @db.ObjectId
+  date      DateTime
+  memo      String?
+  lines     JournalEntryLine[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model JournalEntryLine {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  journalEntryId String       @db.ObjectId
+  accountId      String       @db.ObjectId
+  debit          Float
+  credit         Float
+  Account        Account      @relation(fields: [accountId], references: [id])
+  JournalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id])
+}
